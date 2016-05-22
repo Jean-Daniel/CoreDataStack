@@ -9,7 +9,11 @@
 import CoreData
 import Swift
 
-extension NSManagedObjectContext {
+public protocol _AsyncPerformer {
+  func performAndWait(_ block: () -> Swift.Void)
+}
+
+public extension _AsyncPerformer {
     /**
      Synchronously exexcutes a given function on the receiver’s queue.
 
@@ -24,9 +28,9 @@ extension NSManagedObjectContext {
     **/
     public func performAndWaitOrThrow<Return>(body: () throws -> Return) throws -> Return {
         var result: Return!
-        var thrown: ErrorType?
+        var thrown: ErrorProtocol?
 
-        performBlockAndWait {
+        performAndWait {
             do {
                 result = try body()
             } catch {
@@ -40,4 +44,14 @@ extension NSManagedObjectContext {
             return result
         }
     }
+}
+
+extension NSManagedObjectContext : _AsyncPerformer {
+
+}
+
+extension NSPersistentStoreCoordinator : _AsyncPerformer {
+  public func performAndWait(_ block: () -> Swift.Void) {
+    performBlockAndWait(block);
+  }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9060" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9051"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -21,20 +21,16 @@
                                 <subviews>
                                     <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="hx5-Hc-1f5">
                                         <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
-                                        <animations/>
                                     </activityIndicatorView>
                                 </subviews>
-                                <animations/>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gkH-uC-l1l">
                                 <rect key="frame" x="265" y="324" width="70" height="21"/>
-                                <animations/>
                                 <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="18"/>
                                 <color key="textColor" red="0.41568627953529358" green="0.5058823823928833" blue="0.21176470816135406" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <animations/>
                         <color key="backgroundColor" red="0.96078431606292725" green="0.95686274766921997" blue="0.94509804248809814" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstItem="gkH-uC-l1l" firstAttribute="top" secondItem="hx5-Hc-1f5" secondAttribute="bottom" constant="14" id="Au4-Jr-579"/>
@@ -62,18 +58,15 @@
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bnr-logo-square.png" translatesAutoresizingMaskIntoConstraints="NO" id="qEj-kg-LeY">
                                 <rect key="frame" x="150" y="150" width="300" height="300"/>
-                                <animations/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Stack Setup Complete" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xQT-7j-YEd">
                                 <rect key="frame" x="205" y="121" width="191" height="21"/>
-                                <animations/>
                                 <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="18"/>
                                 <color key="textColor" red="0.88235294818878174" green="0.34509804844856262" blue="0.16078431904315948" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tIx-6e-GVy">
                                 <rect key="frame" x="167" y="466" width="266" height="31"/>
-                                <animations/>
                                 <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="16"/>
                                 <state key="normal" title="Display Fetched Results Controller">
                                     <color key="titleColor" red="0.41568627949999998" green="0.50588238240000005" blue="0.21176470820000001" alpha="1" colorSpace="calibratedRGB"/>
@@ -83,7 +76,6 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <animations/>
                         <color key="backgroundColor" red="0.96078431606292725" green="0.95686274766921997" blue="0.94509804248809814" alpha="1" colorSpace="calibratedRGB"/>
                         <gestureRecognizers/>
                         <constraints>
