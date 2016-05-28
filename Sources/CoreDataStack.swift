@@ -10,9 +10,9 @@ import Foundation
 import CoreData
 
 // MARK: - Action callbacks
-public typealias CoreDataStackSetupCallback = (CoreDataStack.SetupResult) -> Void
-public typealias CoreDataStackStoreResetCallback = (CoreDataStack.ResetResult) -> Void
-public typealias CoreDataStackBatchMOCCallback = (CoreDataStack.BatchContextResult) -> Void
+public typealias CoreDataStackSetupCallback = (CoreDataStackResult<CoreDataStack>) -> Void
+public typealias CoreDataStackStoreResetCallback = (NSError?) -> Void
+public typealias CoreDataStackBatchMOCCallback = (CoreDataStackResult<NSManagedObjectContext>) -> Void
 
 // MARK: - Error Handling
 
@@ -26,16 +26,6 @@ public typealias CoreDataStackBatchMOCCallback = (CoreDataStack.BatchContextResu
  Calling `save()` on any `NSMangedObjectContext` belonging to the stack will automatically bubble the changes all the way to the `NSPersistentStore`
  */
 public final class CoreDataStack {
-
-  /// CoreDataStack specific ErrorProtocols
-  public enum Error: ErrorProtocol {
-    /// Case when an `NSPersistentStore` is not found for the supplied store URL
-    case storeNotFound(at: NSURL)
-    /// Case when an In-Memory store is not found
-    case inMemoryStoreMissing
-    /// Case when the store URL supplied to contruct function cannot be used
-    case unableToCreateStore(at: NSURL)
-  }
 
   /**
    Primary persisting background managed object context. This is the top level context that possess an
@@ -69,6 +59,7 @@ public final class CoreDataStack {
       managedObjectContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
       managedObjectContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyStoreTrumpMergePolicyType)
       managedObjectContext.parent = self.privateQueueContext
+      managedObjectContext.name = "Primary Context (Main Queue)"
 
       NSNotificationCenter.default().addObserver(self,
                                                  selector: #selector(CoreDataStack.stackMemberContextDidSaveNotification(_:)),
@@ -108,7 +99,7 @@ public final class CoreDataStack {
     do {
       try createDirectoryIfNecessary(at: storeFileURL)
     } catch {
-      callback(.failure(Error.unableToCreateStore(at: storeFileURL)))
+      callback(.failure(error as NSError))
       return
     }
 
@@ -137,7 +128,7 @@ public final class CoreDataStack {
   private static func createDirectoryIfNecessary(at url: NSURL) throws {
     let fileManager = NSFileManager.default()
     guard let directory = url.deletingLastPathComponent else {
-      throw Error.unableToCreateStore(at: url)
+      throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteUnsupportedSchemeError)
     }
     try fileManager.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
   }
@@ -202,41 +193,9 @@ public final class CoreDataStack {
   private let saveBubbleDispatchGroup : dispatch_group_t = dispatch_group_create()
 }
 
-public extension CoreDataStack {
-  // TODO: rcedwards These will be replaced with Box/Either or something native to Swift (fingers crossed) https://github.com/bignerdranch/CoreDataStack/issues/10
-
-  // MARK: - Operation Result Types
-
-  /// Result containing either an instance of `NSPersistentStoreCoordinator` or `ErrorProtocol`
-  public enum CoordinatorResult {
-    /// A success case with associated `NSPersistentStoreCoordinator` instance
-    case success(NSPersistentStoreCoordinator)
-    /// A failure case with associated `ErrorProtocol` instance
-    case failure(ErrorProtocol)
-  }
-  /// Result containing either an instance of `NSManagedObjectContext` or `ErrorProtocol`
-  public enum BatchContextResult {
-    /// A success case with associated `NSManagedObjectContext` instance
-    case success(NSManagedObjectContext)
-    /// A failure case with associated `ErrorProtocol` instance
-    case failure(ErrorProtocol)
-  }
-  /// Result containing either an instance of `CoreDataStack` or `ErrorProtocol`
-  public enum SetupResult {
-    /// A success case with associated `CoreDataStack` instance
-    case success(CoreDataStack)
-    /// A failure case with associated `ErrorProtocol` instance
-    case failure(ErrorProtocol)
-  }
-  /// Result of void representing `Success` or an instance of `ErrorProtocol`
-  public enum SuccessResult {
-    /// A success case
-    case success
-    /// A failure case with associated ErrorProtocol instance
-    case failure(ErrorProtocol)
-  }
-  public typealias SaveResult = SuccessResult
-  public typealias ResetResult = SuccessResult
+public enum CoreDataStackResult<T> {
+  case success(T)
+  case failure(NSError)
 }
 
 public extension CoreDataStack {
@@ -255,7 +214,7 @@ public extension CoreDataStack {
       case .inMemory:
         do {
           guard let store = self.persistentStoreCoordinator.persistentStores.first else {
-            resetCallback(.failure(Error.inMemoryStoreMissing))
+            resetCallback(NSError(domain: NSCocoaErrorDomain, code: NSCoreDataError))
             break
           }
           try self.persistentStoreCoordinator.performAndWaitOrThrow {
@@ -263,11 +222,11 @@ public extension CoreDataStack {
             try self.persistentStoreCoordinator.addPersistentStore(ofType: NSInMemoryStoreType, configurationName: nil, at: nil, options: nil)
           }
           dispatch_async(callbackQueue) {
-            resetCallback(.success)
+            resetCallback(nil)
           }
         } catch {
           dispatch_async(callbackQueue) {
-            resetCallback(.failure(error))
+            resetCallback(error as NSError)
           }
         }
         break
@@ -277,28 +236,10 @@ public extension CoreDataStack {
         let mom = self.managedObjectModel
 
         do {
-          //          if #available(iOS 9, OSX 10.11, *) {
-            try coordinator.destroyPersistentStore(at: storeURL, withType: NSSQLiteStoreType, options: nil)
-//          } else {
-//          guard let store = coordinator.persistentStore(for: storeURL) else {
-//            let error = Error.StoreNotFoundAt(url: storeURL)
-//            resetCallback(.Failure(error))
-//            break
-//          }
-//            let fm = NSFileManager()
-//            try coordinator.performAndWaitOrThrow {
-//              try coordinator.remove(store)
-//              try fm.removeItem(at: storeURL)
-//
-//              // Remove journal files if present
-//              // Eat the error because different versions of SQLite might have different journal files
-//              let _ = try? fm.removeItem(at: storeURL.appendingPathComponent("-shm"))
-//              let _ = try? fm.removeItem(at: storeURL.appendingPathComponent("-wal"))
-//            }
-//          }
-        } catch let resetError {
+          try coordinator.destroyPersistentStore(at: storeURL, withType: NSSQLiteStoreType, options: nil)
+        } catch {
           dispatch_async(callbackQueue) {
-            resetCallback(.failure(resetError))
+            resetCallback(error as NSError)
           }
           return
         }
@@ -309,12 +250,12 @@ public extension CoreDataStack {
           case .success (let coordinator):
             self.persistentStoreCoordinator = coordinator
             dispatch_async(callbackQueue) {
-              resetCallback(.success)
+              resetCallback(nil)
             }
 
           case .failure (let error):
             dispatch_async(callbackQueue) {
-              resetCallback(.failure(error))
+              resetCallback(error)
             }
           }
         }
@@ -375,7 +316,7 @@ public extension CoreDataStack {
         moc.persistentStoreCoordinator = coordinator
         setupCallback(.success(moc))
       } catch {
-        setupCallback(.failure(error))
+        setupCallback(.failure(error as NSError))
       }
     case .sqlite(let storeURL):
       let backgroundQueue : dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)

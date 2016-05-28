@@ -30,7 +30,7 @@ public extension NSPersistentStoreCoordinator {
    */
   public class func setupSQLiteBackedCoordinator(managedObjectModel: NSManagedObjectModel,
                                                  storeFileURL: NSURL,
-                                                 completion: (CoreDataStack.CoordinatorResult) -> Void) {
+                                                 completion: (CoreDataStackResult<NSPersistentStoreCoordinator>) -> Void) {
     let backgroundQueue : dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
     dispatch_async(backgroundQueue) {
       do {
@@ -40,8 +40,8 @@ public extension NSPersistentStoreCoordinator {
                                            at: storeFileURL,
                                            options: stockSQLiteStoreOptions)
         completion(.success(coordinator))
-      } catch let error {
-        completion(.failure(error))
+      } catch {
+        completion(.failure(error as NSError))
       }
     }
   }

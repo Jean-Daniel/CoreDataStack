@@ -8,7 +8,7 @@
 
 import CoreData
 
-public typealias CoreDataStackSaveCompletion = (CoreDataStack.SaveResult) -> Void
+public typealias CoreDataStackSaveCompletion = (NSError?) -> Void
 
 /**
  Convenience extension to `NSManagedObjectContext` that ensures that saves to contexts of type
@@ -42,9 +42,9 @@ public extension NSManagedObjectContext {
         func saveFlow() {
             do {
                 try sharedSaveFlow()
-                completion?(.success)
+                completion?(nil)
             } catch let saveError {
-                completion?(.failure(saveError))
+                completion?(saveError as NSError)
             }
         }
 
@@ -96,10 +96,10 @@ public extension NSManagedObjectContext {
                 if let parent = parent {
                     parent.saveToStore(completion: completion)
                 } else {
-                    completion?(.success)
+                    completion?(nil)
                 }
-            } catch let saveError {
-                completion?(.failure(saveError))
+            } catch {
+                completion?(error as NSError)
             }
         }
 
