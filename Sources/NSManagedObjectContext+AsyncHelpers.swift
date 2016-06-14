@@ -26,7 +26,7 @@ public extension _AsyncPerformer {
      - throws: Any error thrown by the inner function. This method should be
        technically `rethrows`, but cannot be due to Swift limitations.
     **/
-    public func performAndWaitOrThrow<Return>(body: () throws -> Return) throws -> Return {
+    public func performAndWaitOrThrow<Return>(_ body: () throws -> Return) throws -> Return {
         var result: Return!
         var thrown: ErrorProtocol?
 
@@ -51,7 +51,5 @@ extension NSManagedObjectContext : _AsyncPerformer {
 }
 
 extension NSPersistentStoreCoordinator : _AsyncPerformer {
-  public func performAndWait(_ block: () -> Swift.Void) {
-    performBlockAndWait(block);
-  }
+
 }

@@ -141,7 +141,7 @@ public struct FetchedResultsSectionInfo<T: NSManagedObject> {
 public class FetchedResultsController<T: NSManagedObject where T: CoreDataModelable> {
 
     /// The `NSFetchRequest` being used by the `FetchedResultsController`
-    public var fetchRequest: NSFetchRequest { return internalController.fetchRequest }
+    public var fetchRequest: NSFetchRequest<T> { return internalController.fetchRequest }
     /// The objects that match the fetch request
     public var fetchedObjects: [T]? { return internalController.fetchedObjects as? [T] }
     /// The first object matching the fetch request

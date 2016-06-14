@@ -28,7 +28,7 @@ public extension NSManagedObjectContext {
             try sharedSaveFlow()
         case .mainQueueConcurrencyType,
              .privateQueueConcurrencyType:
-            try performAndWaitOrThrow(body: sharedSaveFlow)
+            try performAndWaitOrThrow(sharedSaveFlow)
         }
     }
 
@@ -77,7 +77,7 @@ public extension NSManagedObjectContext {
             try saveFlow()
         case .mainQueueConcurrencyType,
              .privateQueueConcurrencyType:
-            try performAndWaitOrThrow(body: saveFlow)
+            try performAndWaitOrThrow(saveFlow)
         }
     }
 

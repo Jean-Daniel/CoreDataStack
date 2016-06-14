@@ -63,10 +63,8 @@ extension CoreDataModelable where Self: NSManagedObject {
 
    - returns: `NSFetchRequest`: The new fetch request.
    */
-  static public func fetchRequestForEntity(in context: NSManagedObjectContext) -> NSFetchRequest {
-    let fetchRequest = NSFetchRequest()
-    fetchRequest.entity = entityDescription(in: context)
-    return fetchRequest
+  static public func fetchRequestForEntity() -> NSFetchRequest<Self> {
+    return NSFetchRequest(entityName: entityName)
   }
 
   /**
@@ -79,13 +77,13 @@ extension CoreDataModelable where Self: NSManagedObject {
 
    - returns: `Self?`: The first entity that matches the optional predicate or `nil`.
    */
-  static public func findFirst(in context: NSManagedObjectContext, predicate: NSPredicate? = nil) throws -> Self? {
-    let fetchRequest = fetchRequestForEntity(in: context)
+  static public func findFirst(in context: NSManagedObjectContext, predicate: Predicate? = nil) throws -> Self? {
+    let fetchRequest = fetchRequestForEntity()
     fetchRequest.predicate = predicate
     fetchRequest.fetchLimit = 1
     fetchRequest.returnsObjectsAsFaults = false
     fetchRequest.fetchBatchSize = 1
-    return try context.fetch(fetchRequest).first as? Self
+    return try context.fetch(fetchRequest).first
   }
 
   /**
@@ -99,11 +97,11 @@ extension CoreDataModelable where Self: NSManagedObject {
 
    - returns: `[Self]`: The array of matching entities.
    */
-  static public func all(in context: NSManagedObjectContext, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil) throws -> [Self] {
-    let fetchRequest = fetchRequestForEntity(in: context)
+  static public func all(in context: NSManagedObjectContext, predicate: Predicate? = nil, sortDescriptors: [SortDescriptor]? = nil) throws -> [Self] {
+    let fetchRequest = fetchRequestForEntity()
     fetchRequest.sortDescriptors = sortDescriptors
     fetchRequest.predicate = predicate
-    return try context.fetch(fetchRequest) as! [Self]
+    return try context.fetch(fetchRequest)
   }
 
   // MARK: - Counting Objects
@@ -118,13 +116,11 @@ extension CoreDataModelable where Self: NSManagedObject {
 
    - returns: `Int`: Count of entities that matches the optional predicate.
    */
-  static public func count(in context: NSManagedObjectContext, predicate: NSPredicate? = nil) throws -> Int {
-    let fetchReqeust = fetchRequestForEntity(in: context)
+  static public func count(in context: NSManagedObjectContext, predicate: Predicate? = nil) throws -> Int {
+    let fetchReqeust = fetchRequestForEntity()
     fetchReqeust.includesSubentities = false
     fetchReqeust.predicate = predicate
-    var error: NSError? = nil
-    let count = context.count(for: fetchReqeust, error: &error)
-    if let error = error { throw error }
+    let count = try context.count(for: fetchReqeust)
     guard count != NSNotFound else { return 0 }
     return count
   }
@@ -139,7 +135,7 @@ extension CoreDataModelable where Self: NSManagedObject {
    - throws: Any error produced from `executeFetchRequest`
    */
   static public func removeAll(in context: NSManagedObjectContext) throws {
-    let fetchRequest = fetchRequestForEntity(in: context)
+    let fetchRequest = fetchRequestForEntity()
     try removeAll(returnedBy: fetchRequest, in: context)
   }
 
@@ -152,19 +148,19 @@ extension CoreDataModelable where Self: NSManagedObject {
    - throws: Any error produced from `executeFetchRequest`
    */
   static public func removeAll(in context: NSManagedObjectContext, except toKeep: [Self]) throws {
-    let fetchRequest = fetchRequestForEntity(in: context)
-    fetchRequest.predicate = NSPredicate(format: "NOT (self IN %@)", argumentArray:toKeep)
+    let fetchRequest = fetchRequestForEntity()
+    fetchRequest.predicate = Predicate(format: "NOT (self IN %@)", argumentArray:toKeep)
     try removeAll(returnedBy: fetchRequest, in: context)
   }
 
   // MARK: Private Funcs
 
-  static private func removeAll(returnedBy fetchRequest: NSFetchRequest, in context: NSManagedObjectContext) throws {
+  static private func removeAll(returnedBy fetchRequest: NSFetchRequest<Self>, in context: NSManagedObjectContext) throws {
     // TODO: rcedwards A batch delete would be more efficient here on iOS 9 and up
     //                  however it complicates things since the request requires a context with
     //                  an NSPersistentStoreCoordinator directly connected. (MOC cannot be a child of another MOC)
     fetchRequest.includesPropertyValues = false
     fetchRequest.includesSubentities = false
-    try context.fetch(fetchRequest).lazy.map { $0 as! NSManagedObject }.forEach(context.delete)
+    try context.fetch(fetchRequest).lazy.forEach(context.delete)
   }
 }
