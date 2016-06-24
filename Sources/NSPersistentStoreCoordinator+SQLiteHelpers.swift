@@ -13,6 +13,8 @@ public extension NSPersistentStoreCoordinator {
   /**
    Default persistent store options used for the `SQLite` backed `NSPersistentStoreCoordinator`
    */
+  // Note: the obj generated code fails to compile. Workaround the issue by not exporting that propery.
+  @nonobjc
   public static var stockSQLiteStoreOptions: [String: AnyObject] {
     return [
              NSMigratePersistentStoresAutomaticallyOption: true,

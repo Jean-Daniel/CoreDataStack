@@ -17,32 +17,32 @@ a `FetchedResultsController` will notify you about.
     /**
      Change type when an object is inserted.
      - parameter object: The inserted object of type `<T>`
-     - parameter indexPath: The `NSIndexPath` of the new object
+     - parameter indexPath: The `IndexPath` of the new object
      */
     public enum FetchedResultsObjectChange<T: NSManagedObject> {
-    case Insert(object: T, indexPath: NSIndexPath)
+    case Insert(object: T, indexPath: IndexPath)
 
     /**
      Change type when an object is deleted.
      - parameter object: The deleted object of type `<T>`
-     - parameter indexPath: The previous `NSIndexPath` of the deleted object
+     - parameter indexPath: The previous `IndexPath` of the deleted object
      */
-    case Delete(object: T, indexPath: NSIndexPath)
+    case Delete(object: T, indexPath: IndexPath)
 
     /**
      Change type when an object is moved.
      - parameter object: The moved object of type `<T>`
-     - parameter fromIndexPath: The `NSIndexPath` of the old location of the object
-     - parameter toIndexPath: The `NSIndexPath` of the new location of the object
+     - parameter fromIndexPath: The `IndexPath` of the old location of the object
+     - parameter toIndexPath: The `IndexPath` of the new location of the object
      */
-    case Move(object: T, fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath)
+    case Move(object: T, fromIndexPath: IndexPath, toIndexPath: IndexPath)
 
     /**
      Change type when an object is updated.
      - parameter object: The updated object of type `<T>`
-     - parameter indexPath `NSIndexPath`: The `NSIndexPath` of the updated object
+     - parameter indexPath `IndexPath`: The `IndexPath` of the updated object
      */
-    case Update(object: T, indexPath: NSIndexPath)
+    case Update(object: T, indexPath: IndexPath)
 }
 
 /**
@@ -158,9 +158,9 @@ public class FetchedResultsController<T: NSManagedObject where T: CoreDataModela
     /// The name of the file used to cache section information.
     public var cacheName: String? { return internalController.cacheName }
     /// Subscript access to the sections
-    public subscript(indexPath: NSIndexPath) -> T { return internalController.objectAtIndexPath(indexPath) as! T }
-    /// The `NSIndexPath` for a specific object in the fetchedObjects
-    public func indexPathForObject(object: T) -> NSIndexPath? { return internalController.indexPathForObject(object) }
+    public subscript(indexPath: IndexPath) -> T { return internalController.objectAtIndexPath(indexPath) as! T }
+    /// The `IndexPath` for a specific object in the fetchedObjects
+    public func indexPathForObject(object: T) -> IndexPath? { return internalController.indexPathForObject(object) }
 
     // MARK: - Lifecycle
 
@@ -217,7 +217,7 @@ public class FetchedResultsController<T: NSManagedObject where T: CoreDataModela
 }
 
 private extension FetchedResultsObjectChange {
-    init?(object: AnyObject, indexPath: NSIndexPath?, changeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    init?(object: AnyObject, indexPath: IndexPath?, changeType type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         guard let object = object as? T else { return nil }
         switch (type, indexPath, newIndexPath) {
         case (.Insert, _?, _):
@@ -287,7 +287,7 @@ private class BaseFetchedResultsControllerDelegate<T>: NSObject, NSFetchedResult
         fatalError()
     }
 
-    @objc func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    @objc func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: IndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         fatalError()
     }
 
@@ -319,7 +319,7 @@ private final class ForwardingFetchedResultsControllerDelegate<Delegate: Fetched
         delegate?.fetchedResultsControllerDidChangeContent(owner)
     }
 
-    override func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+    override func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: IndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         guard let change = FetchedResultsObjectChange<Delegate.T>(object: anObject, indexPath: indexPath, changeType: type, newIndexPath: newIndexPath) else {
             return
         }
