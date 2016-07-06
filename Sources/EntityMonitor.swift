@@ -137,14 +137,14 @@ private class BaseEntityMonitorDelegate<T: NSManagedObject where T: CoreDataMode
       notificationName = NSNotification.Name.NSManagedObjectContextDidSave
     }
 
-    NotificationCenter.default().addObserver(self,
+    NotificationCenter.default.addObserver(self,
                                                selector: ChangeObserverSelectorName,
                                                name: notificationName,
                                                object: owner.context)
   }
 
   final func removeObservers() {
-    NotificationCenter.default().removeObserver(self)
+    NotificationCenter.default.removeObserver(self)
   }
 
   @objc final func evaluateChangeNotification(_ notification: NSNotification) {

@@ -61,13 +61,13 @@ public final class CoreDataStack {
       managedObjectContext.parent = self.privateQueueContext
       managedObjectContext.name = "Primary Context (Main Queue)"
 
-      NotificationCenter.default().addObserver(self,
+      NotificationCenter.default.addObserver(self,
                                                  selector: #selector(CoreDataStack.stackMemberContextDidSaveNotification(_:)),
                                                  name: NSNotification.Name.NSManagedObjectContextDidSave,
                                                  object: managedObjectContext)
     }
     // Always create the main-queue ManagedObjectContext on the main queue.
-    if !Thread.isMainThread() {
+    if !Thread.isMainThread {
       DispatchQueue.main.sync {
         setup()
       }
@@ -89,7 +89,7 @@ public final class CoreDataStack {
    - parameter callback: The `SQLite` persistent store coordinator will be setup asynchronously. This callback will be passed either an initialized `CoreDataStack` object or an `ErrorProtocol` value.
    */
   public static func constructSQLiteStack(modelName: String,
-                                          in bundle: Bundle = Bundle.main(),
+                                          in bundle: Bundle = Bundle.main,
                                           at desiredStoreURL: URL? = nil,
                                           callbackQueue: DispatchQueue? = nil,
                                           callback: CoreDataStackSetupCallback) {
@@ -126,7 +126,7 @@ public final class CoreDataStack {
   }
 
   private static func createDirectoryIfNecessary(at url: URL) throws {
-    let fileManager = FileManager.default()
+    let fileManager = FileManager.default
     let directory = try url.deletingLastPathComponent()
     try fileManager.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
   }
@@ -144,7 +144,7 @@ public final class CoreDataStack {
    - returns: CoreDataStack: Newly created In-Memory `CoreDataStack`
    */
   public static func constructInMemoryStack(modelName: String,
-                                            in bundle: Bundle = Bundle.main()) throws -> CoreDataStack {
+                                            in bundle: Bundle = Bundle.main) throws -> CoreDataStack {
     let model = bundle.managedObjectModel(name: modelName)
     let coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
     try coordinator.addPersistentStore(ofType: NSInMemoryStoreType, configurationName: nil, at: nil, options: nil)
@@ -185,7 +185,7 @@ public final class CoreDataStack {
   }
 
   deinit {
-    NotificationCenter.default().removeObserver(self)
+    NotificationCenter.default.removeObserver(self)
   }
 
   private let saveBubbleDispatchGroup : DispatchGroup = DispatchGroup()
@@ -278,7 +278,7 @@ public extension CoreDataStack {
    */
   public func newChildContext(_ concurrencyType: NSManagedObjectContextConcurrencyType = .privateQueueConcurrencyType,
                               name: String? = "Main Queue Context Child") -> NSManagedObjectContext {
-    if concurrencyType == .mainQueueConcurrencyType && !Thread.isMainThread() {
+    if concurrencyType == .mainQueueConcurrencyType && !Thread.isMainThread {
       preconditionFailure("Main thread MOCs must be created on the main thread")
     }
 
@@ -287,7 +287,7 @@ public extension CoreDataStack {
     moc.parent = mainQueueContext
     moc.name = name
 
-    NotificationCenter.default().addObserver(self,
+    NotificationCenter.default.addObserver(self,
                                                selector: #selector(stackMemberContextDidSaveNotification(_:)),
                                                name: NSNotification.Name.NSManagedObjectContextDidSave,
                                                object: moc)
@@ -356,7 +356,7 @@ private extension CoreDataStack {
 private extension CoreDataStack {
   private static var documentsDirectory: URL {
     get {
-      let urls = FileManager.default().urlsForDirectory(.documentDirectory, inDomains: .userDomainMask)
+      let urls = FileManager.default.urlsForDirectory(.documentDirectory, inDomains: .userDomainMask)
       return urls.first!
     }
   }
