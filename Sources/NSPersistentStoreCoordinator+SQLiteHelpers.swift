@@ -14,7 +14,7 @@ public extension NSPersistentStoreCoordinator {
    Default persistent store options used for the `SQLite` backed `NSPersistentStoreCoordinator`
    */
   // Note: the obj generated code fails to compile. Workaround the issue by not exporting that propery.
-  public static var stockSQLiteStoreOptions: [String: AnyObject] {
+  public static var stockSQLiteStoreOptions: [String: Any] {
     return [
              NSMigratePersistentStoresAutomaticallyOption: true,
              NSInferMappingModelAutomaticallyOption: true,
@@ -31,8 +31,8 @@ public extension NSPersistentStoreCoordinator {
    */
   public class func setupSQLiteBackedCoordinator(_ managedObjectModel: NSManagedObjectModel,
                                                  storeFileURL: URL,
-                                                 completion: (CoreDataStackResult<NSPersistentStoreCoordinator>) -> Void) {
-    let backgroundQueue : DispatchQueue = DispatchQueue.global(attributes: DispatchQueue.GlobalAttributes.qosBackground)
+                                                 completion: @escaping (CoreDataStackResult<NSPersistentStoreCoordinator>) -> Void) {
+    let backgroundQueue : DispatchQueue = DispatchQueue.global(qos: .background)
     backgroundQueue.async {
       do {
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: managedObjectModel)

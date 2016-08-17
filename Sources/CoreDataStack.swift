@@ -103,7 +103,7 @@ public final class CoreDataStack {
       return
     }
 
-    let backgroundQueue : DispatchQueue = DispatchQueue.global(attributes: [.qosBackground])
+    let backgroundQueue : DispatchQueue = DispatchQueue.global(qos: .background)
     let callbackQueue: DispatchQueue = callbackQueue ?? backgroundQueue
     NSPersistentStoreCoordinator.setupSQLiteBackedCoordinator(
       model,
@@ -127,7 +127,7 @@ public final class CoreDataStack {
 
   private static func createDirectoryIfNecessary(at url: URL) throws {
     let fileManager = FileManager.default
-    let directory = try url.deletingLastPathComponent()
+    let directory = url.deletingLastPathComponent()
     try fileManager.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
   }
 
@@ -159,23 +159,23 @@ public final class CoreDataStack {
     case sqlite(at: URL)
   }
 
-  private let managedObjectModelName: String
-  private let storeType: StoreType
-  private let bundle: Bundle
-  private var persistentStoreCoordinator: NSPersistentStoreCoordinator {
+  fileprivate let managedObjectModelName: String
+  fileprivate let storeType: StoreType
+  fileprivate let bundle: Bundle
+  fileprivate var persistentStoreCoordinator: NSPersistentStoreCoordinator {
     didSet {
       privateQueueContext = constructPersistingContext()
       privateQueueContext.persistentStoreCoordinator = persistentStoreCoordinator
       mainQueueContext = constructMainQueueContext()
     }
   }
-  private var managedObjectModel: NSManagedObjectModel {
+  fileprivate var managedObjectModel: NSManagedObjectModel {
     get {
       return bundle.managedObjectModel(name: managedObjectModelName)
     }
   }
 
-  private init(modelName: String, in bundle: Bundle, persistentStoreCoordinator: NSPersistentStoreCoordinator, storeType: StoreType) {
+  fileprivate init(modelName: String, in bundle: Bundle, persistentStoreCoordinator: NSPersistentStoreCoordinator, storeType: StoreType) {
     self.bundle = bundle
     self.storeType = storeType
     managedObjectModelName = modelName
@@ -188,7 +188,7 @@ public final class CoreDataStack {
     NotificationCenter.default.removeObserver(self)
   }
 
-  private let saveBubbleDispatchGroup : DispatchGroup = DispatchGroup()
+  fileprivate let saveBubbleDispatchGroup : DispatchGroup = DispatchGroup()
 }
 
 public enum CoreDataStackResult<T> {
@@ -205,7 +205,7 @@ public extension CoreDataStack {
    - parameter resetCallback: A callback with a `Success` or an `ErrorProtocol` value with the error
    */
   public func resetStore(_ callbackQueue: DispatchQueue? = nil, resetCallback: CoreDataStackStoreResetCallback) {
-    let backgroundQueue : DispatchQueue = DispatchQueue.global(attributes: [.qosBackground])
+    let backgroundQueue : DispatchQueue = DispatchQueue.global(qos: .background)
     let callbackQueue: DispatchQueue = callbackQueue ?? backgroundQueue
     self.saveBubbleDispatchGroup.notify(queue: backgroundQueue) {
       switch self.storeType {
@@ -317,7 +317,7 @@ public extension CoreDataStack {
         setupCallback(.failure(error as NSError))
       }
     case .sqlite(let storeURL):
-      let backgroundQueue : DispatchQueue = DispatchQueue.global(attributes: [.qosBackground])
+      let backgroundQueue : DispatchQueue = DispatchQueue.global(qos: .background)
       let callbackQueue: DispatchQueue = callbackQueue ?? backgroundQueue
       NSPersistentStoreCoordinator.setupSQLiteBackedCoordinator(managedObjectModel, storeFileURL: storeURL) { result in
         switch result {
@@ -336,8 +336,8 @@ public extension CoreDataStack {
   }
 }
 
-private extension CoreDataStack {
-  @objc private func stackMemberContextDidSaveNotification(_ notification: NSNotification) {
+fileprivate extension CoreDataStack {
+  @objc func stackMemberContextDidSaveNotification(_ notification: NSNotification) {
     guard let notificationMOC = notification.object as? NSManagedObjectContext else {
       assertionFailure("Notification posted from an object other than an NSManagedObjectContext")
       return
@@ -353,19 +353,19 @@ private extension CoreDataStack {
   }
 }
 
-private extension CoreDataStack {
-  private static var documentsDirectory: URL {
+fileprivate extension CoreDataStack {
+  static var documentsDirectory: URL {
     get {
-      let urls = FileManager.default.urlsForDirectory(.documentDirectory, inDomains: .userDomainMask)
+      let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
       return urls.first!
     }
   }
 }
 
-private extension Bundle {
-  static private let modelExtension = "momd"
+fileprivate extension Bundle {
+  static let modelExtension = "momd"
   func managedObjectModel(name modelName: String) -> NSManagedObjectModel {
-    guard let URL = urlForResource(modelName, withExtension: Bundle.modelExtension),
+    guard let URL = url(forResource: modelName, withExtension: Bundle.modelExtension),
       let model = NSManagedObjectModel(contentsOf: URL) else {
         preconditionFailure("Model not found or corrupted with name: \(modelName) in bundle: \(self)")
     }
